@@ -39,3 +39,15 @@
 - Replaced distorted legacy vector with authentic macOS menu bar Apple mark (`apple-menu.svg`) at 18px with proper padding.
 - Built Plymouth boot splash theme (`/usr/share/plymouth/themes/macos-apple`) featuring the crisp white vector Apple mark on AMOLED black with a native macOS progress bar.
 - Configured LightDM slick-greeter and WhiteSur GRUB bootloader theme.
+
+## Phase 6: Instant Dock Startup & Low RAM Optimizations
+- **Instant Dock Boot Launch**:
+  - Identified root cause of dock startup delay: `plank.service` was bound to `default.target` before X11 Display `:0` was initialized by LightDM/Cinnamon, resulting in repeated crash/restart timeouts and single-instance DBus lock collisions.
+  - Decoupled `plank.service` from `default.target` and created `~/.config/autostart/plank.desktop` configured with `X-GNOME-Autostart-Phase=Panel` and `X-GNOME-Autostart-Delay=0`.
+  - Result: Dock launches in 50 milliseconds simultaneously with the top panel upon user login under full `systemd` restart supervision.
+- **Low RAM & CPU Profiling**:
+  - Installed and enabled `zram-tools` with `zstd` compressed RAM swap (priority 100, 2.9GB capacity), eliminating sluggish disk swapping.
+  - Disabled dormant heavy background daemons (Akonadi/MySQL personal information server and Evolution alarm notification) saving ~550MB of idle RAM.
+  - Optimized `macos-widgets@liquidglass` desklet to read `/proc/meminfo` and `/proc/loadavg` directly in-memory via `GLib.file_get_contents`, eliminating 3 subprocess spawns (`free`, `df`, `cat`) every 2 seconds.
+  - Added 6s autostart stagger to Bitwarden to prevent boot-time CPU contention.
+

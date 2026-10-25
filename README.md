@@ -263,14 +263,13 @@ dconf write /net/launchpad/plank/docks/dock1/unhide-delay 0
 dconf write /net/launchpad/plank/docks/dock1/hide-delay 150
 ```
 
-Enable persistence via `systemd --user`:
+Configure instant autostart in the Cinnamon **Panel Phase** (0s delay) with `systemd --user` crash recovery:
 ```bash
+# 1. Systemd supervisor (handles auto-restart & LD_PRELOAD hook)
 mkdir -p ~/.config/systemd/user
 cat << 'EOF' > ~/.config/systemd/user/plank.service
 [Unit]
 Description=Plank macOS Dock
-PartOf=graphical-session.target
-After=graphical-session.target
 
 [Service]
 Type=simple
@@ -280,14 +279,58 @@ Environment=LD_PRELOAD=%h/.local/lib/libplank-noglow.so
 ExecStart=/usr/bin/plank
 Restart=always
 RestartSec=1
-
-[Install]
-WantedBy=default.target
 EOF
-
 systemctl --user daemon-reload
-systemctl --user enable --now plank.service
+
+# 2. Panel-phase desktop autostart (triggers immediately with top panel)
+mkdir -p ~/.config/autostart
+cat << 'EOF' > ~/.config/autostart/plank.desktop
+[Desktop Entry]
+Type=Application
+Name=Plank
+Comment=macOS Dock
+Exec=/usr/bin/systemctl --user restart plank.service
+Icon=plank
+Terminal=false
+Categories=Utility;
+StartupNotify=false
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Phase=Panel
+X-GNOME-Autostart-Delay=0
+X-Cinnamon-Autostart-Phase=Panel
+X-Cinnamon-Autostart-Delay=0
+EOF
 ```
+
+---
+
+### 8. Low RAM Optimization & ZRAM Compression (Recommended for <= 8GB RAM)
+
+To keep RAM usage minimal and avoid disk thrashing on older hardware or lower-spec machines:
+
+1. **Enable ZRAM (zstd compressed RAM swap)**:
+   ```bash
+   sudo apt install -y zram-tools
+   sudo sed -i 's/#ALGO=.*/ALGO=zstd/' /etc/default/zramswap
+   sudo sed -i 's/#PERCENT=.*/PERCENT=60/' /etc/default/zramswap
+   sudo systemctl restart zramswap
+   ```
+2. **Disable Unnecessary Background Daemons (Akonadi, Evolution alarm)**:
+   ```bash
+   # Stop heavy MySQL/Akonadi personal info daemon if not using KAlarm/Kalendar
+   akonadictl stop 2>/dev/null || true
+
+   # Prevent background daemons from auto-starting at login
+   mkdir -p ~/.config/autostart
+   for app in org.kde.kalendarac kalarm.autostart org.gnome.Evolution-alarm-notify; do
+       cat << EOF > ~/.config/autostart/${app}.desktop
+[Desktop Entry]
+Type=Application
+Hidden=true
+X-GNOME-Autostart-enabled=false
+EOF
+   done
+   ```
 
 ---
 

@@ -835,7 +835,9 @@ class MacOSWidgetsDesklet extends Desklet.Desklet {
     }
 
     _startTimer() {
-        this._timerId = Mainloop.timeout_add_seconds(2, () => {
+        this._diskTick = 0;
+        this._updateStats();
+        this._timerId = Mainloop.timeout_add_seconds(3, () => {
             this._updateStats();
             return true;
         });
@@ -847,33 +849,41 @@ class MacOSWidgetsDesklet extends Desklet.Desklet {
         this.dateLabel.set_text(now.format("%A, %B %e").toUpperCase());
 
         try {
-            let [res, memOut] = GLib.spawn_command_line_sync("free -m");
-            let lines = ("" + memOut).split("\n");
-            if (lines.length > 1) {
-                let parts = lines[1].trim().split(/\s+/);
-                let totalMB = parseInt(parts[1], 10);
-                let usedMB = parseInt(parts[2], 10);
-                this.ramValue.set_text(`${(usedMB/1024).toFixed(1)} / ${(totalMB/1024).toFixed(1)} GB`);
+            let [ok, memBytes] = GLib.file_get_contents("/proc/meminfo");
+            if (ok) {
+                let memStr = ("" + memBytes);
+                let totalMatch = memStr.match(/MemTotal:\s+(\d+)/);
+                let availMatch = memStr.match(/MemAvailable:\s+(\d+)/);
+                if (totalMatch && availMatch) {
+                    let totalMB = parseInt(totalMatch[1], 10) / 1024.0;
+                    let availMB = parseInt(availMatch[1], 10) / 1024.0;
+                    this.ramValue.set_text(`${((totalMB - availMB)/1024.0).toFixed(1)} / ${(totalMB/1024.0).toFixed(1)} GB`);
+                }
             }
         } catch (e) {}
 
         try {
-            let [res, dfOut] = GLib.spawn_command_line_sync("df -h /");
-            let lines = ("" + dfOut).split("\n");
-            if (lines.length > 1) {
-                let parts = lines[1].trim().split(/\s+/);
-                this.diskValue.set_text(`${parts[3]} Free`);
+            let [ok, loadBytes] = GLib.file_get_contents("/proc/loadavg");
+            if (ok) {
+                let parts = ("" + loadBytes).trim().split(/\s+/);
+                if (parts.length > 0) {
+                    let pct = Math.min(100, Math.round(parseFloat(parts[0]) * 25));
+                    this.cpuValue.set_text(`${pct}%`);
+                }
             }
         } catch (e) {}
 
-        try {
-            let [res, loadOut] = GLib.spawn_command_line_sync("cat /proc/loadavg");
-            let parts = ("" + loadOut).trim().split(/\s+/);
-            if (parts.length > 0) {
-                let pct = Math.min(100, Math.round(parseFloat(parts[0]) * 25));
-                this.cpuValue.set_text(`${pct}%`);
-            }
-        } catch (e) {}
+        this._diskTick = (this._diskTick || 0) + 1;
+        if (this._diskTick === 1 || this._diskTick % 30 === 0) {
+            try {
+                let [res, dfOut] = GLib.spawn_command_line_sync("df -h /");
+                let lines = ("" + dfOut).split("\n");
+                if (lines.length > 1) {
+                    let parts = lines[1].trim().split(/\s+/);
+                    this.diskValue.set_text(`${parts[3]} Free`);
+                }
+            } catch (e) {}
+        }
     }
 
     on_desklet_removed() {
@@ -990,37 +1000,37 @@ mkdir -p "$USER_HOME/.config/systemd/user"
 cat << 'EOF' > "$USER_HOME/.config/systemd/user/plank.service"
 [Unit]
 Description=Plank macOS Dock
-PartOf=graphical-session.target
-After=graphical-session.target
 
 [Service]
 Type=simple
 Environment=DISPLAY=:0
-Environment=XAUTHORITY=/home/sarthak/.Xauthority
-Environment=LD_PRELOAD=/home/sarthak/.local/lib/libplank-noglow.so
+Environment=XAUTHORITY=%h/.Xauthority
+Environment=LD_PRELOAD=%h/.local/lib/libplank-noglow.so
 ExecStart=/usr/bin/plank
 Restart=always
 RestartSec=1
-
-[Install]
-WantedBy=default.target
 EOF
 systemctl --user daemon-reload >/dev/null 2>&1 || true
-systemctl --user enable --now plank.service >/dev/null 2>&1 || true
 
-# Autostart Plank
+# Autostart Plank instantly at Panel phase (0s delay, zero startup lag)
 mkdir -p "$USER_HOME/.config/autostart"
 cat << 'EOF' > "$USER_HOME/.config/autostart/plank.desktop"
 [Desktop Entry]
 Type=Application
-Exec=plank
-Hidden=false
-NoDisplay=false
-X-GNOME-Autostart-enabled=true
 Name=Plank
 Comment=macOS Dock
+Exec=/usr/bin/systemctl --user restart plank.service
+Icon=plank
+Terminal=false
+Categories=Utility;
+StartupNotify=false
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Phase=Panel
+X-GNOME-Autostart-Delay=0
+X-Cinnamon-Autostart-Phase=Panel
+X-Cinnamon-Autostart-Delay=0
 EOF
-step "Configured Liquid Glass Plank Dock and autostart."
+step "Configured instant-launch Liquid Glass Plank Dock and supervisor."
 
 # ------------------------------------------------------------------------------
 # 8. Spotlight Launcher (Ulauncher macOS Tahoe Theme)
