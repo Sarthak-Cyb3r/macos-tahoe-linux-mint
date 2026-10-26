@@ -1,362 +1,206 @@
-# macOS Tahoe 26 (Liquid Glass) on Linux Mint
+# macOS Tahoe 26 (Liquid Glass) on Linux Mint — GNOME Wayland Edition
 
-[![Linux Mint](https://img.shields.io/badge/Linux_Mint-22.x_Cinnamon-87CF3E?style=flat&logo=linuxmint&logoColor=white)](https://linuxmint.com/)
-[![macOS Tahoe](https://img.shields.io/badge/Design-macOS_Tahoe_26_Liquid_Glass-000000?style=flat&logo=apple&logoColor=white)](https://apple.com)
+[![Linux Mint](https://img.shields.io/badge/Linux_Mint-22.x_Ubuntu_24.04-87CF3E?style=flat&logo=linuxmint&logoColor=white)](https://linuxmint.com/)
+[![GNOME Shell](https://img.shields.io/badge/GNOME_Shell-46%2B-4a86cf.svg?logo=gnome)](https://www.gnome.org/)
+[![Wayland](https://img.shields.io/badge/Display-Wayland-orange?logo=wayland&logoColor=white)](https://wayland.freedesktop.org/)
+[![Isle](https://img.shields.io/badge/Notch-Isle_Dynamic_Island-blue)](https://github.com/zickrian/isle)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Transform **Linux Mint (Cinnamon Edition)** into a pixel-perfect, minimalist replica of **macOS Tahoe 26 ("Liquid Glass")**.
+Transform **Linux Mint** into an authentic, ultra-smooth replica of **macOS Tahoe 26 ("Liquid Glass")** powered by **GNOME Shell on Wayland** and the **Isle Dynamic Island notch**.
 
-This guide covers everything **from the absolute basics**—from system packages and theme engines to hardware-accelerated GLSL rounded window shaders, custom Cinnamon applets, high-DPI cursors, an authentic Apple menubar, and an engineered macOS clone dock.
-
----
-
-## 📸 Desktop Preview
-
-![macOS Tahoe 26 Linux Mint Desktop](assets/preview.png)
+Optimized for fluid 60fps animations, intelligent window auto-dodging, native Wayland trackpad gestures, and engineered low-RAM footprint with transparent in-memory Zstandard compression (`zswap` + `zstd`).
 
 ---
 
 ## ✨ Features & Highlights
 
-- **Liquid Glass Shell**: 30px frosted dark menubar with an authentic Apple logo vector, dynamic active application title, custom macOS Tahoe Control Center, and native-styled systray.
-- **Engineered macOS Clone Dock**:
-  - Dark frosted glass theme with 22px rounded corners and tight borders.
-  - Native macOS running indicators (crisp running dots only).
-  - Elementary OS rectangular active glow completely removed via runtime hook (`libplank-noglow.so`).
-  - Pre-cached PNG icons resolving librsvg timeouts and preventing blurry downscaling.
-  - Intelligent auto-dodge allowing maximized windows to span the full screen while gliding up over windows when hovering the bottom edge.
-  - Managed under a persistent `systemd --user` service with auto-recovery.
-- **Hardware-Accelerated Window Curves**: Real 14px rounded corners and drop shadows rendered via Clutter GLSL shaders (`RoundedCorners@klangman`), plus GTK 3/4 CSS curves.
-- **Bento Desktop Widgets**: Live Clock/Calendar, real-time CPU/RAM/SSD telemetry, and Weather cards.
-- **Spotlight Search**: Ulauncher styled with a custom macOS Tahoe translucent bento palette.
-- **Mac Keyboard Shortcuts**: Native macOS keybindings (`Super + Space` for Spotlight, `Super + Q` to close windows, `Super + Tab` switcher).
-- **Apple Boot Screen**: Plymouth boot splash featuring the high-DPI vector Apple mark on deep AMOLED black with a macOS progress bar.
+- **Dynamic Island Notch (Isle)**:
+  - Spring-animated black notch living at the top of your screen.
+  - **Music & Lyrics**: Full MPRIS scrubber with live synchronized karaoke lyrics from LRCLIB.
+  - **Calls & Meetings**: Active call indicators and preview windows for Meet, WhatsApp, and Telegram.
+  - **Focus & Reminders**: Pomodoro focus timer with break rings and task checklist.
+  - **Shelf & Clipboard**: Clipboard history and drag-and-drop file tray.
+  - **AI Voice Assistant**: Direct hook for Claude Code, Codex, and Antigravity.
+- **Liquid Glass Top Menubar**:
+  - Transparent glass bar seamlessly blending into your desktop wallpaper.
+  - Authentic vector **Apple Menu (``)** replacing GNOME's generic "Activities" button.
+- **Intelligent macOS Dock (Wayland Native)**:
+  - Centered floating frosted pill dock with 35% translucent blur.
+  - Native macOS running indicator dots beneath open applications.
+  - **Intelligent Auto-Dodge**: Windows can maximize across the entire screen; hovering the bottom edge glides the dock smoothly over windows with zero resistance (`require-pressure-to-show: false`).
+  - Trash can and Launchpad integrated into the dock pill.
+- **Hardware Acceleration & Low-RAM Engineering**:
+  - **GTK 4 Hardware GL Pipeline**: Enforces `GSK_RENDERER=gl` system-wide, eliminating shader compilation stutter on Intel HD Graphics and legacy GPUs.
+  - **Zstandard In-RAM Compression (`zswap` + `zstd`)**: Allocates a 40% memory pool using Facebook's Zstandard algorithm, virtually expanding 4.8 GB physical RAM to ~10–11 GB usable capacity without freezing or disk thrashing.
+  - **Lean Extension Architecture**: Limited to 3 lightweight extensions keeping GNOME Shell at ~280 MB and Isle at ~2.6 MB.
+- **Spotlight Search**: Ulauncher with custom macOS Tahoe translucent bento palette (`Super + Space`).
+- **Mac Keyboard Shortcuts**: Native macOS keybindings (`Super + Space` for Spotlight, `Super + Q` to close windows, `Super + Tab` switcher, `Super + D` for show desktop).
+- **Screenshots**: `Shift + PrtScn` opens the interactive region/window selector; `PrtScn` snaps the full screen directly.
 
 ---
 
 ## ⚡ Quick Start (Automated Install)
 
-Clone the repository and run the automated setup script:
+Run the automated installer on Linux Mint:
 
 ```bash
-git clone https://github.com/Sarthak-Cyb3r/macos-tahoe-linux-mint.git
+git clone -b gnome-wayland https://github.com/Sarthak-Cyb3r/macos-tahoe-linux-mint.git
 cd macos-tahoe-linux-mint
 chmod +x install.sh
 ./install.sh
 ```
 
-> **Note**: To configure system-level login screens (LightDM Slick-Greeter) and the Plymouth Apple boot screen, execute with sudo:
-> ```bash
-> sudo ./install.sh
-> ```
-
-To revert all changes back to your exact default Mint desktop at any time:
-```bash
-./rollback.sh
-```
+After installation completes, log out and select **GNOME on Wayland** (or **GNOME**) at the login screen.
 
 ---
 
-## 🛠️ Complete Step-by-Step Guide (From Basics)
+## 🛠️ Complete Step-by-Step Guide
 
-If you prefer to configure your system manually or understand how each layer works, follow the steps below from start to finish.
+If you prefer to configure your system manually or understand each component:
 
-### 1. Prerequisites & Dependencies
+### 1. Install GNOME Shell & Core Packages
 
-Install the core build tools, theme engines, dock, and launcher utilities:
+Linux Mint Cinnamon users can install the lightweight GNOME Shell runtime without pulling unnecessary default applications:
 
 ```bash
 sudo apt update
-sudo apt install -y \
-    git curl wget gcc make libglib2.0-dev libcairo2-dev \
-    plank ulauncher plymouth-themes slick-greeter-slick-key \
-    dconf-cli jq fonts-inter fonts-jetbrains-mono
+sudo apt install -y --no-install-recommends \
+    gnome-shell gnome-session gnome-shell-extension-prefs \
+    gnome-control-center gnome-shell-extensions \
+    git curl wget jq unzip dconf-cli fonts-inter fonts-jetbrains-mono
 ```
 
 ---
 
-### 2. Wallpaper & Authentic Apple Vectors
+### 2. Hardware Acceleration & RAM Optimization
 
-Download the official 5K Tahoe wallpaper and deploy the geometric Apple silhouette:
+To ensure smooth 60fps animations and prevent lag on systems with ≤ 8 GB RAM:
 
+#### A. Fix GTK 4 GPU Stutter on Intel Graphics
 ```bash
-mkdir -p ~/.local/share/backgrounds ~/.local/share/icons
+# Set GTK 4 to use stable OpenGL rendering system-wide
+sudo sh -c 'grep -q "GSK_RENDERER" /etc/environment || echo "GSK_RENDERER=gl" >> /etc/environment'
 
-# 5K Tahoe Wallpaper
-wget -q -O ~/.local/share/backgrounds/macOS-Tahoe-5K.jpg \
-    "https://raw.githubusercontent.com/vinceliuice/WhiteSur-wallpapers/main/4k/WhiteSur-dark.jpg"
-gsettings set org.cinnamon.desktop.background picture-uri "file://$HOME/.local/share/backgrounds/macOS-Tahoe-5K.jpg"
-gsettings set org.cinnamon.desktop.background picture-options "zoom"
+mkdir -p ~/.config/environment.d
+echo "GSK_RENDERER=gl" > ~/.config/environment.d/gtk4-renderer.conf
+```
 
-# Deploy Crisp 22x22 Apple Menu Vector
-cp assets/apple-menu.svg ~/.local/share/icons/apple-menu.svg
-cp assets/apple-logo.svg ~/.local/share/icons/apple-logo.svg
+#### B. Enable Zstandard Memory Compression (`zswap`)
+```bash
+sudo sh -c 'echo zstd > /sys/module/zswap/parameters/compressor 2>/dev/null || echo lz4 > /sys/module/zswap/parameters/compressor'
+sudo sh -c 'echo 40 > /sys/module/zswap/parameters/max_pool_percent'
+sudo sh -c 'echo 1 > /sys/module/zswap/parameters/enabled'
+
+# Make persistent across reboots
+sudo bash -c 'cat > /etc/tmpfiles.d/zswap.conf << "EOF"
+w /sys/module/zswap/parameters/enabled - - - - 1
+w /sys/module/zswap/parameters/compressor - - - - zstd
+w /sys/module/zswap/parameters/max_pool_percent - - - - 40
+EOF'
 ```
 
 ---
 
-### 3. GTK 3/4, Shell & Metacity Themes
+### 3. WhiteSur GTK & Shell Themes with Apple Menu
 
-Install WhiteSur GTK and Shell themes:
+Install the WhiteSur themes and patch the GNOME Shell panel icon to the authentic Apple vector:
 
 ```bash
-git clone https://github.com/vinceliuice/WhiteSur-gtk-theme.git /tmp/WhiteSur-gtk
+git clone --depth=1 https://github.com/vinceliuice/WhiteSur-gtk-theme.git /tmp/WhiteSur-gtk
 cd /tmp/WhiteSur-gtk
-./install.sh -c Dark -s standard -t default -N glassy --libadwaita
+./install.sh -c dark -s standard -t default -N glassy --libadwaita --shell -i apple
 cd ~ && rm -rf /tmp/WhiteSur-gtk
 
-# Apply via GSettings
-gsettings set org.cinnamon.desktop.interface gtk-theme 'WhiteSur-Dark'
-gsettings set org.cinnamon.desktop.wm.preferences theme 'WhiteSur-Dark'
-gsettings set org.cinnamon.theme name 'WhiteSur-Dark'
+# Apply GTK and Shell Themes
+gsettings set org.gnome.desktop.interface gtk-theme 'WhiteSur-Dark'
+gsettings set org.gnome.desktop.interface icon-theme 'WhiteSur-dark'
+gsettings set org.gnome.desktop.interface cursor-theme 'WhiteSur-cursors'
+gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+gsettings set org.gnome.desktop.interface font-name 'Inter 10.5'
+gsettings set org.gnome.desktop.interface monospace-font-name 'JetBrains Mono 10'
+gsettings set org.gnome.desktop.wm.preferences button-layout 'close,minimize,maximize:'
 
-# Left-side macOS Traffic Lights (Close, Minimize, Maximize)
-gsettings set org.cinnamon.desktop.wm.preferences button-layout 'close,minimize,maximize:'
+# Enable User Themes Extension & WhiteSur Shell Theme
+gsettings set org.gnome.shell.extensions.user-theme name 'WhiteSur-Dark'
 ```
 
 ---
 
-### 4. Icon Theme & High-DPI macOS Cursors
+### 4. Install & Configure the Intelligent macOS Dock (Dash to Dock)
+
+On Wayland, Plank does not run natively. Install upstream Dash to Dock:
 
 ```bash
-# WhiteSur Icons
-git clone https://github.com/vinceliuice/WhiteSur-icon-theme.git /tmp/WhiteSur-icons
-cd /tmp/WhiteSur-icons
-./install.sh -a -b
-cd ~ && rm -rf /tmp/WhiteSur-icons
+mkdir -p ~/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com
+curl -sL https://github.com/ubuntu/dash-to-dock/releases/download/extensions.gnome.org-v110/dash-to-dock%40micxgx.gmail.com.zip -o /tmp/dash-to-dock.zip
+unzip -q -o /tmp/dash-to-dock.zip -d ~/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com
+rm /tmp/dash-to-dock.zip
 
-# WhiteSur macOS Cursors (Anti-aliased, zero alpha noise)
-git clone https://github.com/vinceliuice/WhiteSur-cursors.git /tmp/WhiteSur-cursors
-mkdir -p ~/.local/share/icons
-cp -r /tmp/WhiteSur-cursors/dist/WhiteSur-cursors ~/.local/share/icons/
-cd ~ && rm -rf /tmp/WhiteSur-cursors
+# Compile Schemas
+mkdir -p ~/.local/share/glib-2.0/schemas
+cp ~/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com/schemas/*.xml ~/.local/share/glib-2.0/schemas/
+glib-compile-schemas ~/.local/share/glib-2.0/schemas/
 
-# Apply Icons and Cursors
-gsettings set org.cinnamon.desktop.interface icon-theme 'WhiteSur-dark'
-gsettings set org.cinnamon.desktop.interface cursor-theme 'WhiteSur-cursors'
-gsettings set org.cinnamon.desktop.interface cursor-size 24
+# Configure Intelligent Auto-Dodge Dock
+gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'BOTTOM'
+gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false
+gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false
+gsettings set org.gnome.shell.extensions.dash-to-dock autohide true
+gsettings set org.gnome.shell.extensions.dash-to-dock intellihide true
+gsettings set org.gnome.shell.extensions.dash-to-dock intellihide-mode 'ALL_WINDOWS'
+gsettings set org.gnome.shell.extensions.dash-to-dock require-pressure-to-show false
+gsettings set org.gnome.shell.extensions.dash-to-dock show-delay 0.05
+gsettings set org.gnome.shell.extensions.dash-to-dock hide-delay 0.2
+gsettings set org.gnome.shell.extensions.dash-to-dock running-indicator-style 'DOTS'
+gsettings set org.gnome.shell.extensions.dash-to-dock custom-theme-customize-running-dots true
+gsettings set org.gnome.shell.extensions.dash-to-dock custom-theme-running-dots-color '#ffffff'
+gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size 48
+gsettings set org.gnome.shell.extensions.dash-to-dock click-action 'focus-minimize-or-previews'
+gsettings set org.gnome.shell.extensions.dash-to-dock custom-theme-shrink true
+gsettings set org.gnome.shell.extensions.dash-to-dock transparency-mode 'FIXED'
+gsettings set org.gnome.shell.extensions.dash-to-dock background-opacity 0.35
+gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts false
+gsettings set org.gnome.shell.extensions.dash-to-dock show-trash true
 ```
 
 ---
 
-### 5. System-wide Rounded Corners (Hardware GLSL)
+### 5. Install Isle (Dynamic Island Notch)
 
-Cinnamon native borders are square. To obtain true macOS rounded corners across all windows, install `RoundedCorners@klangman`:
+Install Isle for the current user:
 
 ```bash
-SPICES_DIR="$HOME/.local/share/cinnamon/extensions/RoundedCorners@klangman"
-mkdir -p "$SPICES_DIR"
-git clone https://github.com/klangman/RoundedCorners.git /tmp/RoundedCorners
-cp -r /tmp/RoundedCorners/RoundedCorners@klangman/* "$SPICES_DIR/"
-rm -rf /tmp/RoundedCorners
+curl -fsSL https://raw.githubusercontent.com/zickrian/isle/main/get.sh | bash
 
-# Configure 14px curvature and soft shadows
-cat << 'EOF' > "$HOME/.config/cinnamon/spices/RoundedCorners@klangman.json"
-{
-    "cornerRadius": { "type": "spinbutton", "value": 14 },
-    "shadowEnabled": { "type": "checkbox", "value": true },
-    "shadowRadius": { "type": "spinbutton", "value": 16 },
-    "shadowOpacity": { "type": "spinbutton", "value": 0.35 }
-}
-EOF
-
-# Enable Extension
-gsettings set org.cinnamon enabled-extensions "['RoundedCorners@klangman']"
+# Ensure Isle is enabled in GNOME Shell
+gsettings set org.gnome.shell enabled-extensions "['isle@zickrian.github.io', 'dash-to-dock@micxgx.gmail.com', 'user-theme@gnome-shell-extensions.gcampax.github.com']"
 ```
 
 ---
 
-### 6. macOS Menu Bar (Top Bar & Apple Logo)
+### 6. macOS Keybindings & Spotlight Search
 
-1. **Move Cinnamon Panel to Top & Set Height to 30px**:
-   ```bash
-   gsettings set org.cinnamon panels-enabled "['1:0:top']"
-   gsettings set org.cinnamon panels-height "['1:30']"
-   ```
-2. **Configure Left Apple Menu Applet**:
-   ```bash
-   python3 -c '
-   import json, os
-   p = os.path.expanduser("~/.config/cinnamon/spices/menu@cinnamon.org/0.json")
-   if os.path.exists(p):
-       with open(p, "r") as f: d = json.load(f)
-       d["menu-custom"]["value"] = True
-       d["menu-icon"]["value"] = os.path.expanduser("~/.local/share/icons/apple-menu.svg")
-       d["menu-icon-size"]["value"] = 18
-       d["menu-label"]["value"] = ""
-       with open(p, "w") as f: json.dump(d, f, indent=4)
-   '
-   ```
-
----
-
-### 7. Engineered macOS Clone Dock (Plank)
-
-Plank provides the closest fluid animation and behavior to the macOS dock, but default themes suffer from three major issues on modern systems:
-1. **Elementary OS Active Glow**: Draws a harsh rectangular backlight behind the active/focused application window.
-2. **Slow Librsvg SVG Parsing**: Causes Plank to exceed its 30ms render deadline and aggressively downscale icons into blurry bitmaps.
-3. **Desktop Visibility vs Application Overlap**: Standard settings either permanently block screen real-estate or hide on the desktop.
-
-#### Solution 1: Active Glow Suppression Hook (`libplank-noglow.so`)
-Compile and install the runtime interceptor:
+Configure Ulauncher and native macOS keyboard shortcuts:
 
 ```bash
-cd src
-make
-make install
-cd ..
-```
-
-The hook safely patches the entry instruction of `plank_dock_theme_draw_active_glow` in memory to `ret` (`0xc3`). This completely eliminates the elementary OS active backlight rectangle without touching running indicator dots.
-
-#### Solution 2: Pre-rendered High-Res Dock Icons
-Pre-render crisp 128x128 PNG icons into `~/.local/share/icons/mac-dock/` and assign them to matching `.desktop` launchers to ensure instant surface rasterization.
-
-#### Solution 3: Liquid Glass Theme & Systemd Supervisor
-Create the theme in `~/.local/share/plank/themes/Liquid-Glass/dock.theme`:
-
-```ini
-[PlankTheme]
-TopRoundness=22
-BottomRoundness=22
-LineWidth=1
-OuterStrokeColor=255;;255;;255;;25
-FillStartColor=44;;48;;58;;155
-FillEndColor=22;;25;;32;;185
-InnerStrokeColor=255;;255;;255;;55
-
-[PlankDockTheme]
-HorizPadding=1
-TopPadding=3
-BottomPadding=3
-ItemPadding=4
-IndicatorSize=4
-IconShadowSize=0
-UrgentBounceHeight=1.8
-LaunchBounceHeight=1.0
-FadeOpacity=1
-ClickTime=250
-UrgentBounceTime=0
-LaunchBounceTime=500
-ActiveTime=300
-SlideTime=120
-FadeTime=180
-HideTime=150
-GlowSize=0
-GlowTime=0
-GlowPulseTime=0
-UrgentHueShift=150
-ItemMoveTime=180
-CascadeHide=true
-BadgeColor=255;;255;;255;;240
-```
-
-Configure Plank via `dconf`:
-```bash
-dconf write /net/launchpad/plank/docks/dock1/theme "'Liquid-Glass'"
-dconf write /net/launchpad/plank/docks/dock1/hide-mode "'intelligent'"
-dconf write /net/launchpad/plank/docks/dock1/icon-size 50
-dconf write /net/launchpad/plank/docks/dock1/zoom-enabled true
-dconf write /net/launchpad/plank/docks/dock1/zoom-percent 125
-dconf write /net/launchpad/plank/docks/dock1/show-dock-item false
-dconf write /net/launchpad/plank/docks/dock1/unhide-delay 0
-dconf write /net/launchpad/plank/docks/dock1/hide-delay 150
-```
-
-Configure instant autostart in the Cinnamon **Panel Phase** (0s delay) with `systemd --user` crash recovery:
-```bash
-# 1. Systemd supervisor (handles auto-restart & LD_PRELOAD hook)
-mkdir -p ~/.config/systemd/user
-cat << 'EOF' > ~/.config/systemd/user/plank.service
-[Unit]
-Description=Plank macOS Dock
-
-[Service]
-Type=simple
-Environment=DISPLAY=:0
-Environment=XAUTHORITY=%h/.Xauthority
-Environment=LD_PRELOAD=%h/.local/lib/libplank-noglow.so
-ExecStart=/usr/bin/plank
-Restart=always
-RestartSec=1
-EOF
-systemctl --user daemon-reload
-
-# 2. Panel-phase desktop autostart (triggers immediately with top panel)
-mkdir -p ~/.config/autostart
-cat << 'EOF' > ~/.config/autostart/plank.desktop
-[Desktop Entry]
-Type=Application
-Name=Plank
-Comment=macOS Dock
-Exec=/usr/bin/systemctl --user restart plank.service
-Icon=plank
-Terminal=false
-Categories=Utility;
-StartupNotify=false
-X-GNOME-Autostart-enabled=true
-X-GNOME-Autostart-Phase=Panel
-X-GNOME-Autostart-Delay=0
-X-Cinnamon-Autostart-Phase=Panel
-X-Cinnamon-Autostart-Delay=0
-EOF
-```
-
----
-
-### 8. Low RAM Optimization & ZRAM Compression (Recommended for <= 8GB RAM)
-
-To keep RAM usage minimal and avoid disk thrashing on older hardware or lower-spec machines:
-
-1. **Enable ZRAM (zstd compressed RAM swap)**:
-   ```bash
-   sudo apt install -y zram-tools
-   sudo sed -i 's/#ALGO=.*/ALGO=zstd/' /etc/default/zramswap
-   sudo sed -i 's/#PERCENT=.*/PERCENT=60/' /etc/default/zramswap
-   sudo systemctl restart zramswap
-   ```
-2. **Disable Unnecessary Background Daemons (Akonadi, Evolution alarm)**:
-   ```bash
-   # Stop heavy MySQL/Akonadi personal info daemon if not using KAlarm/Kalendar
-   akonadictl stop 2>/dev/null || true
-
-   # Prevent background daemons from auto-starting at login
-   mkdir -p ~/.config/autostart
-   for app in org.kde.kalendarac kalarm.autostart org.gnome.Evolution-alarm-notify; do
-       cat << EOF > ~/.config/autostart/${app}.desktop
-[Desktop Entry]
-Type=Application
-Hidden=true
-X-GNOME-Autostart-enabled=false
-EOF
-   done
-   ```
-
----
-
-### 8. Spotlight Search & Keyboard Shortcuts
-
-Install and configure Ulauncher with custom macOS Tahoe bento colors:
-
-```bash
-mkdir -p ~/.config/ulauncher/user-themes/macOS-Tahoe
-cat << 'EOF' > ~/.config/ulauncher/user-themes/macOS-Tahoe/manifest.json
-{
-  "name": "macOS-Tahoe",
-  "display_name": "macOS Tahoe 26",
-  "matched_text": { "color": "#0A84FF" }
-}
-EOF
-
-# Bind Super + Space to Spotlight
-gsettings set org.cinnamon.desktop.keybindings.custom-keybinding:/org/cinnamon/desktop/keybindings/custom-keybindings/custom0/ name 'Spotlight'
-gsettings set org.cinnamon.desktop.keybindings.custom-keybinding:/org/cinnamon/desktop/keybindings/custom-keybindings/custom0/ command 'ulauncher-toggle'
-gsettings set org.cinnamon.desktop.keybindings.custom-keybinding:/org/cinnamon/desktop/keybindings/custom-keybindings/custom0/ binding "['<Super>space']"
+# Rebind input source switch to free Super+Space
+gsettings set org.gnome.desktop.wm.keybindings switch-input-source "[]"
 
 # Mac Window Controls
-gsettings set org.cinnamon.desktop.keybindings.wm close "['<Super>q', '<Alt>F4']"
-gsettings set org.cinnamon.desktop.keybindings.wm switch-to-workspace-left "['<Control><Super>Left']"
-gsettings set org.cinnamon.desktop.keybindings.wm switch-to-workspace-right "['<Control><Super>Right']"
+gsettings set org.gnome.desktop.wm.keybindings close "['<Super>q', '<Alt>F4']"
+gsettings set org.gnome.desktop.wm.keybindings show-desktop "['<Super>d']"
+gsettings set org.gnome.desktop.wm.keybindings switch-applications "['<Super>Tab', '<Alt>Tab']"
+
+# Spotlight Keybinding (Ulauncher)
+KB_PATH="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['$KB_PATH']"
+gsettings set "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$KB_PATH" name "Spotlight"
+gsettings set "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$KB_PATH" command "ulauncher-toggle"
+gsettings set "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$KB_PATH" binding "<Super>space"
+
+# macOS Screenshot Shortcuts
+gsettings set org.gnome.shell.keybindings show-screenshot-ui "['<Shift>Print']"
+gsettings set org.gnome.shell.keybindings screenshot "['Print']"
 ```
 
 ---
@@ -365,78 +209,24 @@ gsettings set org.cinnamon.desktop.keybindings.wm switch-to-workspace-right "['<
 
 | Shortcut | macOS Equivalent | Action |
 | :--- | :--- | :--- |
-| `Super + Space` | `Cmd + Space` | Spotlight Search (Apps, Files, Math) |
-| `Super + Q` | `Cmd + Q` | Close / Quit active window |
-| `Super + Tab` | `Cmd + Tab` | macOS-style App Switcher |
+| `Super + Space` | `Cmd + Space` | Spotlight Search (Ulauncher) |
+| `Super + Q` | `Cmd + Q` | Quit / Close Active Window |
+| `Super + Tab` | `Cmd + Tab` | macOS Application Switcher |
 | `Super + D` | `Cmd + F3` | Show Desktop / Minimize All |
-| `Super + Up` | `Ctrl + Cmd + F` | Maximize window |
-| `Super + Down` | `Cmd + M` | Unmaximize / Restore window |
+| `Shift + PrtScn`| `Cmd + Shift + 4`| Interactive Selection Screenshot Tool |
+| `PrtScn` | `Cmd + Shift + 3`| Full-Screen Instant Capture |
+| `Super + I` | — | Open Isle Voice Assistant / Panel |
 
 ---
 
-## 🔬 Technical Deep Dive: Plank Active Glow Elimination
+## 🔄 Reverting / Rollback
 
-Plank (from the elementary OS project) was architected to render a colored gradient backlight behind whichever application window is currently active. In `libplank.so.1`, this behavior is handled by:
-
-```c
-void plank_dock_theme_draw_active_glow(PlankDockTheme *self,
-                                      PlankSurface *surface,
-                                      GdkRectangle *rect,
-                                      GdkRectangle *rect2,
-                                      GdkRGBA *color,
-                                      GtkPositionType position,
-                                      double progress);
-```
-
-Because `plank_dock_theme_draw_active_glow` is called whenever an active launcher is rendered—regardless of theme settings—setting `ActiveTime=0` in `dock.theme` creates a floating-point division by zero (`elapsed / 0.0 = +inf`), which causes Plank to clamp `progress` to `1.0` and permanently display the active glow rectangle at 100% opacity.
-
-Our lightweight hook ([`src/libplank-noglow.c`](src/libplank-noglow.c)) loads via `LD_PRELOAD`:
-
-```c
-#define _GNU_SOURCE
-#include <dlfcn.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <stdint.h>
-
-__attribute__((constructor))
-static void init_noglow(void) {
-    void *fn = dlsym(RTLD_DEFAULT, "plank_dock_theme_draw_active_glow");
-    if (!fn) return;
-
-    long pagesize = sysconf(_SC_PAGESIZE);
-    uintptr_t page_start = (uintptr_t)fn & ~(pagesize - 1);
-
-    if (mprotect((void *)page_start, pagesize, PROT_READ | PROT_WRITE | PROT_EXEC) == 0) {
-        *(unsigned char *)fn = 0xc3; // x86_64 'ret' instruction
-        mprotect((void *)page_start, pagesize, PROT_READ | PROT_EXEC);
-    }
-}
-```
-
-By atomically patching the entry byte of `plank_dock_theme_draw_active_glow` to `0xc3` (`ret`) during process initialization, the active glow is bypassed with zero runtime overhead while retaining all other dock rendering, including the running indicator dots.
-
----
-
-## 🔄 Uninstallation & Safe Rollback
-
-To restore Linux Mint to its default baseline state:
-
-```bash
-./rollback.sh
-```
-
-The rollback script automatically:
-1. Restores all original GSettings and dconf keys from the baseline backup.
-2. Restores default panel positioning and standard Mint applets.
-3. Re-enables the default Mint-Y / Mint-X themes, cursors, and icons.
-4. Stops and disables the `plank.service` systemd unit.
-5. Removes custom applets, desklets, and Ulauncher themes.
-6. Replaces the Plymouth Apple splash screen with the stock Linux Mint plymouth theme.
+To disable GNOME Wayland customizations or return to your Cinnamon desktop:
+Simply log out of your session, click your username, click the gear icon, and select **Cinnamon**. All Cinnamon panels, desklets, and applets remain completely untouched.
 
 ---
 
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
-Wallpapers, cursors, and icon themes belong to their respective creators (WhiteSur by [vinceliuice](https://github.com/vinceliuice)).
+Wallpapers and theme resources belong to their respective authors (WhiteSur by [vinceliuice](https://github.com/vinceliuice), Isle by [zickrian](https://github.com/zickrian/isle)).
