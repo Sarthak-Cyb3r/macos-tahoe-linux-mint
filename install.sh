@@ -220,10 +220,45 @@ fi
 # ------------------------------------------------------------------------------
 # 9. Touchpad & Behavior
 # ------------------------------------------------------------------------------
-info "[9/9] Configuring Touchpad and Window Behaviors..."
+info "[9/10] Configuring Touchpad and Window Behaviors..."
 gsettings set org.gnome.desktop.peripherals.touchpad natural-scroll true 2>/dev/null || true
 gsettings set org.gnome.desktop.peripherals.touchpad tap-to-click true 2>/dev/null || true
 step "Configured natural scrolling and tap-to-click."
+
+# ------------------------------------------------------------------------------
+# 10. Plymouth Apple Boot Splash
+# ------------------------------------------------------------------------------
+info "[10/10] Configuring macOS Apple Plymouth Boot Splash..."
+sudo mkdir -p /usr/share/plymouth/themes/macos-apple
+if [ -f "$USER_HOME/.local/share/icons/apple-logo.svg" ]; then
+    inkscape -w 128 -h 157 "$USER_HOME/.local/share/icons/apple-logo.svg" -o /tmp/apple-logo-hires.png 2>/dev/null || true
+    if [ -f /tmp/apple-logo-hires.png ]; then
+        sudo cp /tmp/apple-logo-hires.png /usr/share/plymouth/themes/macos-apple/watermark.png
+        sudo cp /tmp/apple-logo-hires.png /usr/share/plymouth/themes/macos-apple/bgrt-fallback.png
+        rm -f /tmp/apple-logo-hires.png
+    fi
+fi
+
+if ! grep -q "^i915" /etc/initramfs-tools/modules 2>/dev/null; then
+    echo "i915" | sudo tee -a /etc/initramfs-tools/modules >/dev/null
+fi
+
+sudo tee /etc/plymouth/plymouthd.conf >/dev/null << 'EOF'
+[Daemon]
+Theme=macos-apple
+ShowDelay=0
+DeviceTimeout=8
+EOF
+
+if ! grep -q "GRUB_GFXPAYLOAD_LINUX" /etc/default/grub 2>/dev/null; then
+    echo 'GRUB_GFXPAYLOAD_LINUX=keep' | sudo tee -a /etc/default/grub >/dev/null
+fi
+
+sudo update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth /usr/share/plymouth/themes/macos-apple/macos-apple.plymouth 200 >/dev/null 2>&1 || true
+sudo update-alternatives --set default.plymouth /usr/share/plymouth/themes/macos-apple/macos-apple.plymouth >/dev/null 2>&1 || true
+sudo update-grub >/dev/null 2>&1 || true
+sudo update-initramfs -u >/dev/null 2>&1 || true
+step "Configured authentic Apple boot screen and updated initramfs."
 
 echo
 echo -e "${BOLD}${GREEN}======================================================================${RESET}"
