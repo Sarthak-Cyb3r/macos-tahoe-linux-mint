@@ -256,6 +256,15 @@ fi
 
 sudo update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth /usr/share/plymouth/themes/macos-apple/macos-apple.plymouth 200 >/dev/null 2>&1 || true
 sudo update-alternatives --set default.plymouth /usr/share/plymouth/themes/macos-apple/macos-apple.plymouth >/dev/null 2>&1 || true
+
+# Hold boot screen for 2.5s on fast SSDs
+sudo mkdir -p /etc/systemd/system/plymouth-quit.service.d
+sudo tee /etc/systemd/system/plymouth-quit.service.d/delay.conf >/dev/null << 'EOF'
+[Service]
+ExecStartPre=/bin/sleep 2.5
+EOF
+sudo systemctl daemon-reload >/dev/null 2>&1 || true
+
 sudo update-grub >/dev/null 2>&1 || true
 sudo update-initramfs -u >/dev/null 2>&1 || true
 step "Configured authentic Apple boot screen and updated initramfs."
